@@ -1,0 +1,53 @@
+name: edulink
+description: "AI-powered edtech app for secondary and university students."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
+  cloud_firestore: ^6.4.1
+  firebase_storage: ^13.4.1
+  firebase_messaging: ^16.2.2
+  firebase_database: ^12.4.1
+
+  # State management & DI
+  flutter_bloc: ^9.1.1
+  get_it: ^9.2.1
+  equatable: ^2.0.8
+
+  # Navigation
+  go_router: ^17.2.3
+
+  # Auth
+  google_sign_in: ^7.2.0
+
+  # Fonts & UI
+  google_fonts: ^8.1.0
+
+  # Functional programming
+  dartz: ^0.10.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  injectable_generator: ^2.4.0
+  build_runner: ^2.4.9
+  mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+    - assets/fonts/
