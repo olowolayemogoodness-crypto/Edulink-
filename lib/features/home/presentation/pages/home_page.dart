@@ -10,6 +10,13 @@ import '../widgets/live_rooms_strip.dart';
 import '../widgets/leaderboard_strip.dart';
 import '../widgets/continue_button.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../discover/presentation/pages/discover_page.dart';
+import '../../../leaderboard/presentation/pages/leaderboard_page.dart';
+import '../../../study_rooms/presentation/pages/study_rooms_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../core/services/user_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,11 +46,11 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: IndexedStack(
               index: _activeIndex,
-              children: const [
+              children:  [
                 _HomeContent(),
-                _PlaceholderPage(label: 'Study'),
-                _PlaceholderPage(label: 'Compete'),
-                _PlaceholderPage(label: 'Discover'),
+                 StudyRoomsPage(),
+                LeaderboardPage(),
+                DiscoverPage(),
                 ProfilePage(),
               ],
             ),
@@ -63,6 +70,10 @@ class _HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<Map<String, dynamic>?>(
+      stream: UserService.profileStream(),
+      builder: (context, snapshot) {
+        final profile = snapshot.data;
     return SafeArea(
       bottom: false,
       child: SingleChildScrollView(
@@ -70,9 +81,16 @@ class _HomeContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HomeTopBar(streakCount: 14, xpCount: 2840),
-            const _GreetingBlock(name: 'Adaeze'),
-            const DailyGoalCard(percent: 0.68, xpToday: 120, xpTotal: 2840),
+            HomeTopBar(streakCount: (profile?['streak'] as int?) ?? 0, xpCount: (profile?['xp'] as int?) ?? 0),
+            _GreetingBlock(name: context.read<AuthBloc>().state is AuthAuthenticated
+             ? ((context.read<AuthBloc>().state as AuthAuthenticated).user.displayName).split(' ').first
+              : 'there'),
+            DailyGoalCard(
+              percent: ((profile?['xpToday'] as int?) ?? 0) / 180.0 > 1.0 ? 1.0 : ((profile?['xpToday'] as int?) ?? 0) / 180.0,
+              xpToday: (profile?['xpToday'] as int?) ?? 0,
+              xpTotal: (profile?['xp'] as int?) ?? 0,
+              rank: (profile?['rank'] as int?) ?? 0,
+            ),
             const SizedBox(height: AppSpacing.lg),
             _SectionHeader(title: 'Continue learning', linkText: 'See all', onTap: () {}),
             const SizedBox(height: AppSpacing.md),
@@ -92,24 +110,12 @@ class _HomeContent extends StatelessWidget {
         ),
       ),
     );
+  },
+  );
   }
 }
 
-class _PlaceholderPage extends StatelessWidget {
-  final String label;
-  const _PlaceholderPage({required this.label});
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Center(
-        child: Text(label,
-            style: AppTextStyles.headlineLarge.copyWith(color: AppColors.textTertiary)),
-      ),
-    );
-  }
-}
 
 class _GreetingBlock extends StatelessWidget {
   final String name;

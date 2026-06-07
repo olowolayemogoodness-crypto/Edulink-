@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/errors/failures.dart';
 import '../models/user_model.dart';
+import '../../../../core/services/user_service.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signInWithEmail(String email, String password);
@@ -24,7 +25,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> signInWithEmail(String email, String password) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      return UserModel.fromFirebase(cred.user!);
+      final user = UserModel.fromFirebase(cred.user!);
+      await UserService.ensureProfile(uid: user.uid, displayName: user.displayName, email: user.email);
+      return user;
     } on FirebaseAuthException catch (e) { throw AuthFailure(_map(e.code)); }
   }
 
@@ -37,7 +40,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         idToken: googleAuth.idToken,
       );
       final cred = await _auth.signInWithCredential(credential);
-      return UserModel.fromFirebase(cred.user!);
+      final user = UserModel.fromFirebase(cred.user!);
+      await UserService.ensureProfile(uid: user.uid, displayName: user.displayName, email: user.email);
+      return user;
     } on FirebaseAuthException catch (e) { throw AuthFailure(_map(e.code)); }
     catch (e) { throw const AuthFailure('Google sign-in failed.'); }
   }
@@ -48,7 +53,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       await cred.user!.updateDisplayName(name);
       await cred.user!.reload();
-      return UserModel.fromFirebase(_auth.currentUser!);
+      final user = UserModel.fromFirebase(_auth.currentUser!);
+      await UserService.ensureProfile(uid: user.uid, displayName: name, email: email);
+      return user;
     } on FirebaseAuthException catch (e) { throw AuthFailure(_map(e.code)); }
   }
 

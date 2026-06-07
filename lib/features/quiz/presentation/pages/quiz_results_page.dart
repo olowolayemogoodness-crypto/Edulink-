@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../bloc/quiz_bloc.dart';
+import '../../../../core/services/user_service.dart';
 
 class QuizResultsPage extends StatefulWidget {
   const QuizResultsPage({super.key});
@@ -30,6 +31,9 @@ class _QuizResultsPageState extends State<QuizResultsPage> with TickerProviderSt
           .animate(CurvedAnimation(parent: xpCtrl, curve: Curves.easeOut));
       xpAnim.addListener(() => setState(() => _displayXp = xpAnim.value.round()));
       Future.delayed(const Duration(milliseconds: 300), () { _ringCtrl.forward(); xpCtrl.forward(); });
+      UserService.awardXP(state.result.xpEarned, reason: 'quiz');
+      UserService.updateStreak();
+      UserService.updateLeaderboard();
     } else {
       _ringAnim = const AlwaysStoppedAnimation(0);
     }

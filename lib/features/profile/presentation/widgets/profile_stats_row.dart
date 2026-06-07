@@ -3,32 +3,50 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class ProfileStatsRow extends StatefulWidget {
-  const ProfileStatsRow({super.key});
+  final int streak;
+  final int friends;
+  final int tasksDone;
+  const ProfileStatsRow({super.key, this.streak = 0, this.friends = 0, this.tasksDone = 0});
   @override
   State<ProfileStatsRow> createState() => _State();
 }
 
 class _State extends State<ProfileStatsRow> {
   double _streak = 0, _friends = 0, _tasks = 0;
+
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 400), _animate);
   }
+
+  @override
+  void didUpdateWidget(ProfileStatsRow old) {
+    super.didUpdateWidget(old);
+    if (old.streak != widget.streak || old.friends != widget.friends || old.tasksDone != widget.tasksDone) {
+      _animate();
+    }
+  }
+
   void _animate() {
     if (!mounted) return;
     const dur = 900;
     final start = DateTime.now();
+    final targetStreak = widget.streak.toDouble();
+    final targetFriends = widget.friends.toDouble();
+    final targetTasks = widget.tasksDone.toDouble();
     void tick() {
       if (!mounted) return;
       final t = DateTime.now().difference(start).inMilliseconds / dur;
       final p = t >= 1.0 ? 1.0 : 1 - _cube(1 - t);
-      setState(() { _streak = 14 * p; _friends = 247 * p; _tasks = 183 * p; });
+      setState(() { _streak = targetStreak * p; _friends = targetFriends * p; _tasks = targetTasks * p; });
       if (t < 1.0) Future.delayed(const Duration(milliseconds: 16), tick);
     }
     tick();
   }
+
   double _cube(double x) => x * x * x;
+
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -12,6 +12,8 @@ import '../widgets/strengths_widget.dart';
 import '../widgets/learning_style_card.dart';
 import '../widgets/success_prediction_card.dart';
 import '../widgets/badges_scroll_widget.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/services/user_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -39,6 +41,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<Map<String, dynamic>?>(
+      stream: UserService.profileStream(),
+      builder: (context, snapshot) {
+        final profile = snapshot.data;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
@@ -61,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                           Text('Profile', style: GoogleFonts.dmSans(
                               fontSize: 22, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                           Row(mainAxisSize: MainAxisSize.min, children: [
-                            IconButton(onPressed: () {},
+                            IconButton(onPressed: () => context.push('/settings'),
                                 icon: const Icon(Icons.settings_outlined, color: AppColors.textTertiary, size: 22),
                                 padding: EdgeInsets.zero, constraints: const BoxConstraints()),
                             const SizedBox(width: 16),
@@ -75,9 +81,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 const SliverToBoxAdapter(
                   child: Padding(padding: EdgeInsets.fromLTRB(20, 12, 20, 0), child: ProfileHeaderWidget()),
                 ),
-                const SliverToBoxAdapter(child: ProfileStatsRow()),
+                SliverToBoxAdapter(child: ProfileStatsRow(
+                  streak: (profile?['streak'] as int?) ?? 0,
+                  friends: (profile?['friends'] as int?) ?? 0,
+                  tasksDone: (profile?['tasksDone'] as int?) ?? 0,
+                )),
                 SliverToBoxAdapter(child: _Section(title: 'Study activity', linkLabel: 'See history', onLink: () {}, child: const ActivityRingsCard())),
-                SliverToBoxAdapter(child: _Section(title: 'This week', child: const ThisWeekGrid())),
+                SliverToBoxAdapter(child: _Section(title: 'This week', child: ThisWeekGrid(
+                  xp: (profile?['xp'] as int?) ?? 0,
+                  rank: (profile?['rank'] as int?) ?? 0,
+                ))),
                 SliverToBoxAdapter(child: _Section(title: 'Streak', child: const StreakCardWidget())),
                 SliverToBoxAdapter(child: _Section(title: 'Course progress', linkLabel: 'All courses', onLink: () {}, child: const CourseProgressWidget())),
                 SliverToBoxAdapter(child: _Section(title: 'Strengths & focus areas', child: const StrengthsWidget())),
@@ -95,9 +108,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
       ),
     );
+      },
+    );
   }
 }
-
 class _Section extends StatelessWidget {
   final String title;
   final String? linkLabel;

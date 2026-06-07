@@ -16,5 +16,6 @@ class AppRoutes {
   static const String cameraScan  = '/camera-scan';
   static const String settings    = '/settings';
   static const String examPrep    = '/exam-prep';
-  static const String analytics   = '/analytics';
+  static const String analytics    = '/analytics';
+  static const String practiceTest = '/practice-test';
 }

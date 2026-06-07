@@ -35,6 +35,9 @@ dependencies:
 
   # Functional programming
   dartz: ^0.10.1
+  google_generative_ai: ^0.4.7
+  image_picker: ^1.2.2
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

@@ -9,11 +9,15 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/tutor/presentation/pages/tutor_page.dart';
 import '../../features/quiz/presentation/pages/quiz_page.dart';
+import '../../features/exam_prep/presentation/pages/exam_prep_page.dart';
 import '../../features/flashcards/presentation/pages/flashcards_page.dart';
 import '../../features/study_rooms/presentation/pages/study_rooms_page.dart';
 import '../../features/leaderboard/presentation/pages/leaderboard_page.dart';
 import '../../features/scholarship/presentation/pages/scholarship_page.dart';
 import '../../features/camera_scan/presentation/pages/camera_scan_page.dart';
+import '../../features/practice_test/presentation/pages/practice_test_page.dart';
+import '../../features/profile/presentation/pages/profile_settings_page.dart';
+import '../../features/auth/presentation/pages/student_type_page.dart';
 
 class AppRouter {
   AppRouter._();
@@ -30,11 +34,15 @@ class AppRouter {
       GoRoute(path: AppRoutes.profile,     name: 'profile',     builder: (c, s) => const ProfilePage()),
       GoRoute(path: AppRoutes.tutor,       name: 'tutor',       builder: (c, s) => const TutorPage()),
       GoRoute(path: AppRoutes.quiz,        name: 'quiz',        builder: (c, s) => const QuizPage()),
+      GoRoute(path: AppRoutes.examPrep,    name: 'examPrep',    builder: (c, s) => const ExamPrepPage()),
       GoRoute(path: AppRoutes.flashcards,  name: 'flashcards',  builder: (c, s) => const FlashcardsPage()),
       GoRoute(path: AppRoutes.studyRoom,   name: 'studyRoom',   builder: (c, s) => const StudyRoomsPage()),
       GoRoute(path: AppRoutes.leaderboard, name: 'leaderboard', builder: (c, s) => const LeaderboardPage()),
       GoRoute(path: AppRoutes.scholarship, name: 'scholarship', builder: (c, s) => const ScholarshipPage()),
       GoRoute(path: AppRoutes.cameraScan,  name: 'cameraScan',  builder: (c, s) => const CameraScanPage()),
+      GoRoute(path: AppRoutes.practiceTest, name: 'practiceTest', builder: (c, s) => const PracticeTestPage()),
+      GoRoute(path: '/settings', name: 'settings', builder: (c, s) => const ProfileSettingsPage()),
+      GoRoute(path: '/student-type', name: 'studentType', builder: (c, s) => const StudentTypePage()),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('Page not found: ${state.error}',

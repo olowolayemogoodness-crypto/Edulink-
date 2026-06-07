@@ -45,5 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.118812936354-n7hnb84ame9jdgslhs3j12s6jrqh166d</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>EduLink needs camera access to scan questions with Gemini AI</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>EduLink needs photo library access to scan questions with Gemini AI</string>
 </dict>
 </plist>

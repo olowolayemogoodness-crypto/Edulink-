@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class ThisWeekGrid extends StatefulWidget {
-  const ThisWeekGrid({super.key});
+  final int xp;
+  final int rank;
+  const ThisWeekGrid({super.key, this.xp = 0, this.rank = 0});
   @override
   State<ThisWeekGrid> createState() => _State();
 }
@@ -19,9 +21,12 @@ class _State extends State<ThisWeekGrid> with SingleTickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 500), () { if (mounted) _ctrl.forward(); });
   }
   @override void dispose() { _ctrl.dispose(); super.dispose(); }
+
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(animation: _anim, builder: (_, _) {
+    final xp = widget.xp;
+    final rank = widget.rank;
+    return AnimatedBuilder(animation: _anim, builder: (_, __) {
       return Column(children: [
         Row(children: [
           Expanded(child: _Card(label: 'Efficiency', labelIcon: Icons.trending_up,
@@ -32,14 +37,14 @@ class _State extends State<ThisWeekGrid> with SingleTickerProviderStateMixin {
           const SizedBox(width: 8),
           Expanded(child: _Card(label: 'Global rank', labelIcon: Icons.public,
               labelIconColor: const Color(0xFFBA7517),
-              value: '#38', valueColor: const Color(0xFFBA7517),
+              value: rank > 0 ? '#$rank' : '—', valueColor: const Color(0xFFBA7517),
               sub: 'Top 0.4% worldwide',
               bars: const [90, 80, 72, 68, 60, 55, 48], barColor: const Color(0xFFBA7517), barP: _anim.value)),
         ]),
         const SizedBox(height: 8),
         Row(children: [
           Expanded(child: _Card(label: 'Points earned',
-              value: '${(_anim.value * 2840).round()}', valueColor: AppColors.textPrimary,
+              value: '${(_anim.value * xp).round()}', valueColor: AppColors.textPrimary,
               sub: '+420 this week')),
           const SizedBox(width: 8),
           Expanded(child: _Card(label: 'Peak focus',

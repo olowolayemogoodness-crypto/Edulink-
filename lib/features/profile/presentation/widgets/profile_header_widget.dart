@@ -1,7 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../core/services/user_service.dart';
 
 class ProfileHeaderWidget extends StatefulWidget {
   const ProfileHeaderWidget({super.key});
@@ -30,8 +34,13 @@ class _State extends State<ProfileHeaderWidget> with SingleTickerProviderStateMi
                 painter: _ArcPainter(progress: _anim.value * 0.65))),
         Container(width: 58, height: 58,
             decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF1E1D3A)),
-            child: Center(child: Text('AO', style: GoogleFonts.dmSans(
-                fontSize: 18, fontWeight: FontWeight.w500, color: const Color(0xFFAFA9EC), letterSpacing: 1)))),
+            child: Center(child: Builder(builder: (ctx) {
+              final state = ctx.read<AuthBloc>().state;
+              final name = state is AuthAuthenticated ? state.user.displayName : 'U';
+              final initials = name.trim().split(' ').where((p) => p.isNotEmpty).take(2).map((p) => p[0].toUpperCase()).join();
+              return Text(initials, style: GoogleFonts.dmSans(
+                fontSize: 18, fontWeight: FontWeight.w500, color: const Color(0xFFAFA9EC), letterSpacing: 1));
+            }))),
         Positioned(bottom: 0, right: 0, child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(color: const Color(0xFF2A1F00), borderRadius: BorderRadius.circular(20),
@@ -41,9 +50,23 @@ class _State extends State<ProfileHeaderWidget> with SingleTickerProviderStateMi
       ])),
       const SizedBox(width: 14),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Adaeze Okonkwo', style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+        Builder(builder: (ctx) {
+          final state = ctx.read<AuthBloc>().state;
+          final name = state is AuthAuthenticated ? state.user.displayName : 'User';
+          return Text(name, style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textPrimary));
+        }),
         const SizedBox(height: 2),
-        Text('University · Computer Science', style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.textTertiary)),
+        StreamBuilder<Map<String, dynamic>?>(
+          stream: UserService.profileStream(),
+          builder: (context, snapshot) {
+            final profile = snapshot.data;
+            final studentType = profile?['studentType'] as String? ?? 'university';
+            final course = profile?['course'] as String? ?? '';
+            final typeLabel = studentType == 'secondary' ? 'Secondary School' : 'University';
+            final subtitle = course.isNotEmpty ? '$typeLabel · $course' : typeLabel;
+            return Text(subtitle, style: GoogleFonts.dmSans(fontSize: 11, color: AppColors.textTertiary));
+          },
+        ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
