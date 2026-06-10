@@ -84,7 +84,36 @@ class UserService {
       'tasksDone': FieldValue.increment(1),
     });
   }
+// ── Reset daily XP if new day ──
+  static Future<void> resetDailyIfNeeded() async {
+    if (uid == null) return;
+    final ref = _db.collection('users').doc(uid);
+    final doc = await ref.get();
+    final data = doc.data();
+    if (data == null) return;
 
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastReset = (data['lastDailyReset'] as Timestamp?)?.toDate();
+    final lastResetDay = lastReset != null ? DateTime(lastReset.year, lastReset.month, lastReset.day) : null;
+
+    if (lastResetDay == null || lastResetDay.isBefore(today)) {
+      final updates = <String, dynamic>{
+        'xpToday': 0,
+        'tasksToday': 0,
+        'lastDailyReset': FieldValue.serverTimestamp(),
+      };
+      final lastStudy = (data['lastStudyDate'] as Timestamp?)?.toDate();
+      if (lastStudy != null) {
+        final lastStudyDay = DateTime(lastStudy.year, lastStudy.month, lastStudy.day);
+        final yesterday = today.subtract(const Duration(days: 1));
+        if (lastStudyDay.isBefore(yesterday)) {
+          updates['streak'] = 0;
+        }
+      }
+      await ref.update(updates);
+    }
+  }
   // ── Update streak ──
   static Future<void> updateStreak() async {
     if (uid == null) return;

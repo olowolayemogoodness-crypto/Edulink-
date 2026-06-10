@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/services/user_service.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -44,6 +45,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
     if (!hasOnboarded) {
       if (mounted) context.go('/onboarding');
     } else if (user != null) {
+      await UserService.resetDailyIfNeeded();
       if (mounted) context.go('/home');
     } else {
       if (mounted) context.go('/login');
