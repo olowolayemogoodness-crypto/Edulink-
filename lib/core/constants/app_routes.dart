@@ -18,4 +18,5 @@ class AppRoutes {
   static const String examPrep    = '/exam-prep';
   static const String analytics    = '/analytics';
   static const String practiceTest = '/practice-test';
+  static const String library      = '/library';
 }

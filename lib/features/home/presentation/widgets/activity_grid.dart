@@ -69,9 +69,9 @@ class ActivityGrid extends StatelessWidget {
       route: '/exam-prep',
     ),
     _ActivityCard(
-      name: 'Camera scan',
-      sub: 'Snap a question',
-      icon: Icons.camera_alt_rounded,
+      name: 'Study Library',
+      sub: 'Books · PDFs · Notes',
+      icon: Icons.menu_book_rounded,
       iconBg: Color(0xFF0C1E32),
       iconColor: Color(0xFF85B7EB),
       borderColor: Color(0xFF185FA5),

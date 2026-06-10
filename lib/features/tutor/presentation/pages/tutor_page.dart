@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,6 +74,10 @@ class _TutorPageState extends State<TutorPage> {
   String _camStatus = 'Snap a question';
   String _camLabel = 'Gemini is reading…';
   final _camLabels = const ['Gemini is reading…', 'Identifying question…', 'Extracting text…', 'Generating explanation…'];
+  final _picker = ImagePicker();
+  File? _camImage;
+  String? _camQuestion;
+  String? _camExplanation;
 
   @override
   void dispose() {
@@ -134,28 +141,61 @@ class _TutorPageState extends State<TutorPage> {
   });
 
   void _resetCam() => setState(() {
-    _camScanning = false; _camDone = false; _camError = false;
-    _camStatus = 'Snap a question'; _camLabel = _camLabels[0];
-  });
+  _camScanning = false; _camDone = false; _camError = false;
+  _camImage = null; _camQuestion = null; _camExplanation = null;
+  _camStatus = 'Snap a question'; _camLabel = _camLabels[0];
+});
 
-  void _shoot() {
-    if (_camScanning || _camDone) return;
-    HapticFeedback.mediumImpact();
-    setState(() { _camScanning = true; _camStatus = 'Analysing…'; _camLabel = _camLabels[0]; });
+  Future<void> _shoot() async {
+  if (_camScanning || _camDone) return;
+  HapticFeedback.mediumImpact();
+  try {
+    final picked = await _picker.pickImage(
+        source: ImageSource.camera, imageQuality: 85);
+    if (picked == null) return;
+    final file = File(picked.path);
+    setState(() {
+      _camImage = file; _camScanning = true;
+      _camStatus = 'Analysing…'; _camLabel = _camLabels[0];
+    });
     for (int i = 1; i < _camLabels.length; i++) {
-      Future.delayed(Duration(milliseconds: 900 * i), () {
+      Future.delayed(Duration(milliseconds: 700 * i), () {
         if (mounted && _camScanning) setState(() => _camLabel = _camLabels[i]);
       });
     }
-    Future.delayed(const Duration(milliseconds: 3800), () {
-      if (!mounted) return;
-      final err = DateTime.now().millisecond % 5 == 0;
-      setState(() {
-        _camScanning = false; _camDone = true; _camError = err;
-        _camStatus = err ? 'Could not read' : 'Question found!';
-      });
+    const apiKey = 'YOUR_GEMINI_API_KEY_HERE';
+    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: apiKey);
+    final imageBytes = await file.readAsBytes();
+    const prompt = '''You are an expert tutor. Look at this image and:
+1. Extract the question or problem shown
+2. Provide a clear step-by-step explanation
+
+Format exactly like this:
+QUESTION: [the question text]
+EXPLANATION: [step-by-step solution]''';
+    final response = await model.generateContent([
+      Content.multi([DataPart('image/jpeg', imageBytes), TextPart(prompt)])
+    ]);
+    final text = response.text ?? '';
+    final qMatch = RegExp(
+        r'QUESTION:\s*(.+?)(?=EXPLANATION:|$)', dotAll: true).firstMatch(text);
+    final eMatch = RegExp(
+        r'EXPLANATION:\s*(.+)', dotAll: true).firstMatch(text);
+    if (!mounted) return;
+    setState(() {
+      _camScanning = false; _camDone = true; _camError = false;
+      _camStatus = 'Question found!';
+      _camQuestion = qMatch?.group(1)?.trim() ?? 'Question detected';
+      _camExplanation = eMatch?.group(1)?.trim() ?? text;
+    });
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      _camScanning = false; _camDone = true;
+      _camError = true; _camStatus = 'Could not read';
     });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +517,10 @@ class _TutorPageState extends State<TutorPage> {
             height: 220,
             decoration: BoxDecoration(color: const Color(0xFF0A0A0C), border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16)),
             child: Stack(children: [
-              if (!_camDone) CustomPaint(size: const Size(double.infinity, 220), painter: _GridPainter()),
+              if (_camImage != null)
+  ClipRRect(borderRadius: BorderRadius.circular(16),
+    child: Image.file(_camImage!, fit: BoxFit.cover, width: double.infinity, height: 220))
+else if (!_camDone) CustomPaint(size: const Size(double.infinity, 220), painter:_GridPainter()),
               Center(child: SizedBox(width: 200, height: 160, child: Stack(children: [
                 _corner(top: 0, left: 0, tl: true),
                 _corner(top: 0, right: 0, tr: true),
@@ -520,12 +563,18 @@ class _TutorPageState extends State<TutorPage> {
                   Text('Question detected', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.accentLight)),
                 ]),
                 const SizedBox(height: 8),
-                Text('If sin θ = 3/5 and θ is acute, find (sin θ + cos θ) / tan θ',
-                    style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary, height: 1.5)),
+                Text(_camQuestion ?? 'Question detected',
+    style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary, height: 1.5)),
+if (_camExplanation != null) ...[
+  const SizedBox(height: 10),
+  Container(height: 0.5, color: AppColors.border),
+  const SizedBox(height: 10),
+  Text(_camExplanation!, style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.textSecondary, height: 1.7)),
+],
                 const SizedBox(height: 12),
                 Row(children: [
                   Expanded(child: GestureDetector(
-                    onTap: () => _startChat('Solve: If sin θ = 3/5 and θ is acute, find (sin θ + cos θ) / tan θ'),
+                    onTap: () => _startChat('Solve: ${_camQuestion ?? ''}'),
                     child: Container(padding: const EdgeInsets.symmetric(vertical: 11),
                       decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(10)),
                       child: Center(child: Text('Solve with Gemini', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)))),
