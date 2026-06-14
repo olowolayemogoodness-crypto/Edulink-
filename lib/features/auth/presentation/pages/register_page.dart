@@ -83,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (state is AuthAuthenticated) {
           final course = _courseCtrl.text.trim();
           if (course.isNotEmpty) UserService.updateProfile(course: course);
-          ctx.go('/home');
+          ctx.go('/subject-picker');
         }
         if (state is AuthError) _showError(state.message);
       },
